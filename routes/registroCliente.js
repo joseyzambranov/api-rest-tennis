@@ -74,6 +74,10 @@ router.post('/guardar', verifyToken, async (req, res) => {
     await mutex.acquire();
     const connection = await dbConnection(); // Obtén la conexión a la base de datos
     const input = req.body;
+    //console.log(validateTimeAndPrice(input.txtHoraInicial,input.txtHoraFinal,input.txtTiempo))
+    if(!validateTimeAndPrice(input.txtFecha,input.txtHoraInicial,input.txtHoraFinal,input.txtTiempo,input.ddlClientes)){
+     return res.status(400).json({ error: 'No coinciden las horas de juego con el precio. Por favor, elija una sola hora o actualice su dispositivo.' });
+    }
 
     if (validarFecha(-1, input.ddlLocalidad, input.txtFecha, input.txtHoraInicial, input.txtHoraFinal)) {
       // Verificar si hay una campaña que comienza en la misma hora
@@ -562,6 +566,23 @@ function calPriceTime(horaInicio, horaFin, precioBase) {
 
   const resultado = multiplicador * parseFloat(precioBase); // Multiplicar por el precio base
   return {precioBase , resultado : resultado.toFixed(2) , duracion};
+}
+
+function validateTimeAndPrice(fecha,horaInicio, horaFin,duracion,cliente){
+  //const fechaActual = moment().format('YYYY-MM-DD');
+  const horaInicioConFecha = `${fecha} ${horaInicio}`;
+  const horaFinConFecha = `${fecha} ${horaFin}`;
+  const fechaInicio = moment(horaInicioConFecha);
+  const fechaFin = moment(horaFinConFecha);
+  const duracionReal = fechaFin.diff(fechaInicio, 'minutes');
+  //var texto = '50 minuto(s)';
+var numero = parseInt(duracion.replace(/\D/g, ''), 10);
+if(duracionReal == numero){
+  return true
+}else{
+  console.log(`error en hora de inicio ${fechaInicio} y hora de fin ${fechaFin} no coincide con la hora real ${duracionReal} con la proporcionada ${numero} cliente ${cliente}`)
+  return false
+}
 }
 
 module.exports = router;
