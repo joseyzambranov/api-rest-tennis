@@ -9,7 +9,9 @@ const mutex = new Mutex();
 
 router.get('/listar/', async (req, res) => {
   try {
-    const connection = await dbConnection(); // Obtén la conexión a la base de datos
+    const connection = await dbConnection();
+    const mytime = moment().tz('America/Lima');
+    const fecha = mytime.format('YYYY-MM-DD');
     const idFilter = req.query.id;
     let sql = `
       SELECT
@@ -35,6 +37,11 @@ router.get('/listar/', async (req, res) => {
     if (idFilter) {
       sql += " WHERE registro.codLocalidad = ?";
       params.push(idFilter);
+    }
+
+    if (fecha) {
+      sql += " and registro.fechRegistro >= ?";
+      params.push(fecha);
     }
 
     const [rows] = await connection.query(sql, params); // Ejecuta la consulta utilizando la conexión
@@ -212,7 +219,8 @@ router.get('/listar-cliente/:id', verifyToken, async (req, res) => {
         registro.codCliente = ?
       ORDER BY
         registro.fechRegistro DESC,
-        registro.horainicio DESC`;
+        registro.horainicio DESC
+        `;
 
     const connection = await dbConnection(); // Obtén la conexión a la base de datos
 
