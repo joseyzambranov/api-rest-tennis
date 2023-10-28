@@ -220,7 +220,7 @@ router.get('/listar-cliente/:id', verifyToken, async (req, res) => {
       ORDER BY
         registro.fechRegistro DESC,
         registro.horainicio DESC
-        `;
+      limit 10`;
 
     const connection = await dbConnection(); // Obtén la conexión a la base de datos
 
